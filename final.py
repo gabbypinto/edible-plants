@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
-
+import matplotlib.pyplot as plt
 import os
 import numpy as np
 from keras.preprocessing.image import ImageDataGenerator
@@ -14,15 +14,15 @@ conv_base = VGG16(weights='imagenet',
                   include_top=False,
                   input_shape=(150, 150, 3))
 
-base_dir = '/Users/katherinehansen/CPSC393/edible-plants/allplants' 
+base_dir = r'C:\Users\gabri\Documents\edible-plants\allplants'
 train_dir = os.path.join(base_dir, 'train')
 test_dir = os.path.join(base_dir, 'test')
 validation_dir = os.path.join(base_dir, 'validation')
 
 
 
-datagen = ImageDataGenerator(rescale=1./255) 
-batch_size = 1
+datagen = ImageDataGenerator(rescale=1./255)
+batch_size = 20
 
 model = models.Sequential()
 model.add(layers.Conv2D(32, (3, 3), activation='relu',input_shape=(150, 150, 3)))
@@ -43,35 +43,65 @@ model.compile(loss='binary_crossentropy',
 
 
 def extract_features(directory, sample_count):
-    features = np.zeros(shape=(sample_count, 4, 4, 512)) 
+    features = np.zeros(shape=(sample_count, 4, 4, 512))
     labels = np.zeros(shape=(sample_count))
     generator = datagen.flow_from_directory(
-        directory, 
-        target_size=(150, 150), 
-        batch_size=batch_size, 
+        directory,
+        target_size=(150, 150),
+        batch_size=batch_size,
         class_mode='binary')
     i=0
     for inputs_batch, labels_batch in generator:
-        print(generator.directory)
         features_batch = conv_base.predict(inputs_batch)
-        features[i * batch_size : (i + 1) * batch_size] = features_batch 
+        features[i * batch_size : (i + 1) * batch_size] = features_batch
         labels[i * batch_size : (i + 1) * batch_size] = labels_batch
         i += 1
         if i * batch_size >= sample_count:
             break
         else:
             print(i * batch_size , sample_count)
-    return features, labels   
+    return features, labels
 
 
-train_features, train_labels = extract_features(train_dir, 2000)
+train_features, train_labels = extract_features(train_dir, 6879)
 # print(train_features, train_labels)
-# validation_features, validation_labels = extract_features(validation_dir, 93) 
+# batch_size = 20
+validation_features, validation_labels = extract_features(validation_dir, 90)
 # print(validation_features, validation_labels)
 test_features, test_labels = extract_features(test_dir, 416)
-print(test_features, test_labels)
+# print(test_features, test_labels)
 
-train_features = np.reshape(train_features, (6880, 4 * 4 * 512))
-# validation_features = np.reshape(validation_features, (93, 4 * 4 * 512))
+train_features = np.reshape(train_features, (6879, 4 * 4 * 512))
+validation_features = np.reshape(validation_features, (90, 4 * 4 * 512))
 test_features = np.reshape(test_features, (416, 4 * 4 * 512))
 
+
+
+model = models.Sequential()
+model.add(layers.Dense(256, activation='relu', input_dim=4 * 4 * 512))
+model.add(layers.Dropout(0.5))
+model.add(layers.Dense(1, activation='sigmoid'))
+model.compile(optimizer=optimizers.RMSprop(lr=2e-5),
+loss='binary_crossentropy',
+metrics=['acc'])
+history = model.fit(train_features, train_labels,
+epochs=30,
+batch_size=20,
+validation_data=(validation_features, validation_labels))
+
+
+acc = history.history['acc']
+val_acc = history.history['val_acc']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs = range(1, len(acc) + 1)
+plt.plot(epochs, acc, 'bo', label='Training acc')
+plt.plot(epochs, val_acc, 'b', label='Validation acc')
+plt.title('Training and validation accuracy')
+plt.legend()
+plt.figure()
+plt.plot(epochs, loss, 'bo', label='Training loss')
+plt.plot(epochs, val_loss, 'b', label='Validation loss')
+plt.title('Training and validation loss')
+plt.legend()
+plt.show()
