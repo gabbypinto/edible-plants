@@ -22,7 +22,7 @@ validation_dir = os.path.join(base_dir, 'validation')
 
 
 datagen = ImageDataGenerator(rescale=1./255) 
-batch_size = 50
+batch_size = 1
 
 model = models.Sequential()
 model.add(layers.Conv2D(32, (3, 3), activation='relu',input_shape=(150, 150, 3)))
@@ -52,6 +52,7 @@ def extract_features(directory, sample_count):
         class_mode='binary')
     i=0
     for inputs_batch, labels_batch in generator:
+        print(generator.directory)
         features_batch = conv_base.predict(inputs_batch)
         features[i * batch_size : (i + 1) * batch_size] = features_batch 
         labels[i * batch_size : (i + 1) * batch_size] = labels_batch
@@ -63,14 +64,14 @@ def extract_features(directory, sample_count):
     return features, labels   
 
 
-# train_features, train_labels = extract_features(train_dir, 6880)
+train_features, train_labels = extract_features(train_dir, 2000)
 # print(train_features, train_labels)
 # validation_features, validation_labels = extract_features(validation_dir, 93) 
 # print(validation_features, validation_labels)
 test_features, test_labels = extract_features(test_dir, 416)
 print(test_features, test_labels)
 
-train_features = np.reshape(train_features, (2000, 4 * 4 * 512))
-validation_features = np.reshape(validation_features, (1000, 4 * 4 * 512))
-test_features = np.reshape(test_features, (1000, 4 * 4 * 512))
+train_features = np.reshape(train_features, (6880, 4 * 4 * 512))
+# validation_features = np.reshape(validation_features, (93, 4 * 4 * 512))
+test_features = np.reshape(test_features, (416, 4 * 4 * 512))
 
