@@ -66,16 +66,16 @@ def extract_features(directory, sample_count):
 train_features, train_labels = extract_features(train_dir, 6879)
 # print(train_features, train_labels)
 # batch_size = 20
-validation_features, validation_labels = extract_features(validation_dir, 90)
+validation_features, validation_labels = extract_features(validation_dir, 358)
 # print(validation_features, validation_labels)
 test_features, test_labels = extract_features(test_dir, 416)
 # print(test_features, test_labels)
 
 train_features = np.reshape(train_features, (6879, 4 * 4 * 512))
-validation_features = np.reshape(validation_features, (90, 4 * 4 * 512))
+validation_features = np.reshape(validation_features, (358, 4 * 4 * 512))
 test_features = np.reshape(test_features, (416, 4 * 4 * 512))
 
-
+test_datagen = ImageDataGenerator(rescale=1./255)
 
 model = models.Sequential()
 model.add(layers.Dense(256, activation='relu', input_dim=4 * 4 * 512))
@@ -88,6 +88,19 @@ history = model.fit(train_features, train_labels,
 epochs=30,
 batch_size=20,
 validation_data=(validation_features, validation_labels))
+
+
+
+
+test_generator = test_datagen.flow_from_directory(
+test_dir,
+target_size=(150, 150),
+batch_size=20,
+class_mode='binary')
+# test_loss, test_acc = model.evaluate(test_generator, steps=50)
+# print('test acc:', test_acc)
+test_acc = model.predict(test_generator)
+print(test_acc)
 
 
 acc = history.history['acc']
