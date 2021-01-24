@@ -8,8 +8,12 @@ from keras import optimizers
 from keras.preprocessing import image
 from keras import models
 from keras import layers
+from keras import regularizers
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
 from keras.applications import VGG16
+from keras.layers import GaussianNoise
+from keras.regularizers import l2
+
 
 conv_base = VGG16(weights='imagenet',
                   include_top=False,
@@ -56,16 +60,23 @@ validation_features = np.reshape(validation_features, (358, 4 * 4 * 512))
 test_features = np.reshape(test_features, (416, 4 * 4 * 512))
 
 
-
-
 model = models.Sequential()
 model.add(layers.Dense(256, activation='relu', input_dim=4 * 4 * 512))
-
-# model.add(Conv2D(32, kernel_size=(3, 3), activation='relu'))
-# model.add(MaxPooling2D(pool_size=(2, 2)))
-
-model.add(layers.Dropout(0.5))
+model.add(layers.Dropout(0.2))
+model.add(layers.Dense(32, activation='relu', activity_regularizer=l2(0.001)))
 model.add(layers.Dense(1, activation='sigmoid'))
+# model.add(GaussianNoise(0.01))
+
+conv_base.trainable = True
+set_trainable = False
+for layer in conv_base.layers:
+    if layer.name == 'block5_conv1':
+        set_trainable = True
+    if set_trainable:
+        layer.trainable = True
+    else:
+        layer.trainable = False
+
 model.compile(optimizer=optimizers.RMSprop(lr=2e-5),
     loss='binary_crossentropy',
     metrics=['acc'])
@@ -77,19 +88,7 @@ history = model.fit(train_features, train_labels,
 print(history.history)
 
 test_datagen = ImageDataGenerator(rescale=1./255)
-# test_generator = test_datagen.flow_from_directory(
-#     test_dir,
-#     target_size=(150, 150),
-#     batch_size=20,
-#     class_mode='binary')
-# print(test_generator.samples)
-# test_pred = model.predict(test_generator)
-# # test_pred = model.predict(test_features,test_labels)
-# print(test_pred)
-# score = model.evaluate(test_pred, test_labels)
-# # in book
-# # test_loss, test_acc = model.evaluate_generator(test_generator, steps=50)
-# print('test acc:', score)
+
 test_generator = test_datagen.flow_from_directory(
 test_dir,
 target_size=(150, 150),
