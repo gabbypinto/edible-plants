@@ -81,7 +81,7 @@ model.compile(optimizer=optimizers.RMSprop(lr=2e-5),
     loss='binary_crossentropy',
     metrics=['acc'])
 history = model.fit(train_features, train_labels,
-    epochs=30,
+    epochs=30, 
     batch_size=20,
     validation_data=(validation_features, validation_labels))
 
