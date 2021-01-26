@@ -14,7 +14,7 @@ from keras.applications import VGG16
 from keras.layers import GaussianNoise
 from keras.regularizers import l2
 
-
+#instantia the VGG16 model
 conv_base = VGG16(weights='imagenet',
                   include_top=False,
                   input_shape=(150, 150, 3))
@@ -81,7 +81,7 @@ model.compile(optimizer=optimizers.RMSprop(lr=2e-5),
     loss='binary_crossentropy',
     metrics=['acc'])
 history = model.fit(train_features, train_labels,
-    epochs=30, 
+    epochs=30,
     batch_size=20,
     validation_data=(validation_features, validation_labels))
 

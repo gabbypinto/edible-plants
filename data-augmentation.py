@@ -58,7 +58,7 @@ model.compile(loss='binary_crossentropy',
 optimizer=optimizers.RMSprop(lr=2e-5),
 metrics=['acc'])
 
-# fit generator will be deprecated for the next version 
+# fit generator will be deprecated for the next version
 history = model.fit_generator(
 train_generator,
 steps_per_epoch=343, #100
@@ -67,6 +67,7 @@ validation_data=validation_generator,
 validation_steps=17) #50
 
 print(history.history)
+
 
 #graphs
 acc = history.history['acc']
@@ -86,63 +87,5 @@ plt.title('Training and validation loss')
 plt.legend()
 plt.show()
 
-
-# def extract_features(directory, sample_count):
-#     features = np.zeros(shape=(sample_count, 4, 4, 512))
-#     labels = np.zeros(shape=(sample_count))
-#     generator = train_datagen.flow_from_directory(
-#         directory,
-#         target_size=(150, 150),
-#         batch_size=batch_size,
-#         class_mode='binary')
-#     i=0
-#     for inputs_batch, labels_batch in generator:
-#         features_batch = conv_base.predict(inputs_batch)
-#         features[i * batch_size : (i + 1) * batch_size] = features_batch
-#         labels[i * batch_size : (i + 1) * batch_size] = labels_batch
-#         i += 1
-#         if i * batch_size >= sample_count:
-#             break
-#         else:
-#             print(i * batch_size , sample_count)
-#     return features, labels
-
-#--------------------------------------------------------------------------------------
-
-
-# train_features, train_labels = extract_features(train_dir, 6879)
-# # print(train_features, train_labels)
-# # batch_size = 20
-# validation_features, validation_labels = extract_features(validation_dir, 358)
-# print(validation_features, validation_labels)
-# test_features, test_labels = extract_features(test_dir, 416)
-# # print(test_features, test_labels)
-#
-# train_features = np.reshape(train_features, (6879, 4 * 4 * 512))
-# validation_features = np.reshape(validation_features, (358, 4 * 4 * 512))
-# test_features = np.reshape(test_features, (416, 4 * 4 * 512))
-#
-#
-#
-# model = models.Sequential()
-# model.add(layers.Dense(256, activation='relu', input_dim=4 * 4 * 512))
-# model.add(layers.Dropout(0.5))
-# model.add(layers.Dense(1, activation='sigmoid'))
-# model.compile(optimizer=optimizers.RMSprop(lr=2e-5),
-# loss='binary_crossentropy',
-# metrics=['acc'])
-# history = model.fit(train_features, train_labels,
-# epochs=30,
-# batch_size=20,
-# validation_data=(validation_features, validation_labels))
-# # print(model.summary())
-#
-# model.compile(loss='binary_crossentropy',
-# optimizer=optimizers.RMSprop(lr=2e-5),
-# metrics=['acc'])
-# history = model.fit_generator(
-# train_generator,
-# steps_per_epoch=100,
-# epochs=30,
-# validation_data=validation_generator,
-# validation_steps=50)
+test_loss, test_acc = model.evaluate_generator(test_datagen,steps=50)
+print('test acc:', test_acc)
